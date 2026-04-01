@@ -187,6 +187,11 @@ class GameAPI {
         return this.emit('buy-potion', { potionType, count });
     }
     
+    // 购买属性重置
+    async buyResetPoints() {
+        return this.emit('buy-reset-points');
+    }
+    
     // 使用药品
     async usePotion(potionType) {
         return this.emit('use-potion', { potionType });

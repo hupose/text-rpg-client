@@ -676,6 +676,12 @@ input[type="number"]:focus {
     gap: 8px;
 }
 
+.shop-divider {
+    margin-top: 16px;
+    border-top: 1px dashed var(--border-color);
+    padding-top: 16px;
+}
+
 .shop-item-info {
     flex: 1 1 100%;
     min-width: 0;

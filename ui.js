@@ -616,6 +616,20 @@ async function onBuyPotion(potionType) {
     }
 }
 
+async function onBuyResetPoints() {
+    try {
+        const result = await gameAPI.buyResetPoints();
+        if (result.success) {
+            addLog(result.message, 'success');
+            updateShopDisplay();
+        } else if (result.reason === 'not_enough_gold') {
+            addLog(`金币不足！需要 ${result.required}，当前 ${result.current}`, 'system');
+        }
+    } catch (error) {
+        addLog('请求失败: ' + error.message, 'error');
+    }
+}
+
 // ==================== 药品使用 ====================
 function onOpenPotionPanel() {
     elements.potionPanel.classList.remove('hidden');
