@@ -596,8 +596,8 @@ async function onBuyPotion(potionType) {
     const countInput = document.getElementById(countInputId[potionType]);
     const count = parseInt(countInput?.value) || 1;
     
-    if (count < 1 || count > 99) {
-        addLog('购买数量无效！请输入 1-99', 'system');
+    if (count < 1 || count > 999) {
+        addLog('购买数量无效！请输入 1-999', 'system');
         return;
     }
     
