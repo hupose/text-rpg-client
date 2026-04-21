@@ -639,6 +639,8 @@ input[type="number"]:focus {
     padding: 20px;
     width: 90%;
     max-width: 400px;
+    max-height: 80vh;
+    overflow-y: auto;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
     z-index: 1000;
 }
@@ -650,6 +652,12 @@ input[type="number"]:focus {
     margin-bottom: 16px;
     border-bottom: 2px solid var(--border-color);
     padding-bottom: 12px;
+    position: sticky;
+    top: -20px;
+    background: var(--card-bg);
+    margin-top: -20px;
+    padding-top: 20px;
+    z-index: 1;
 }
 
 .shop-header h3 {
@@ -657,11 +665,17 @@ input[type="number"]:focus {
 }
 
 .shop-close-btn {
-    background: none;
+    background: var(--danger-color);
     border: none;
-    font-size: 24px;
+    font-size: 20px;
     cursor: pointer;
-    color: var(--text-muted);
+    color: white;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .shop-item {
@@ -778,6 +792,8 @@ input[type="number"]:focus {
     padding: 20px;
     width: 90%;
     max-width: 400px;
+    max-height: 80vh;
+    overflow-y: auto;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
     z-index: 1000;
 }
@@ -789,6 +805,12 @@ input[type="number"]:focus {
     margin-bottom: 16px;
     border-bottom: 2px solid var(--border-color);
     padding-bottom: 12px;
+    position: sticky;
+    top: -20px;
+    background: var(--card-bg);
+    margin-top: -20px;
+    padding-top: 20px;
+    z-index: 1;
 }
 
 .potion-header h3 {
