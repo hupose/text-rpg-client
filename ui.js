@@ -110,6 +110,37 @@ function initElements() {
         // 使用药品
         potionPanel: document.getElementById('potionPanel'),
         btnUsePotion: document.getElementById('btnUsePotion'),
+        
+        // 装备管理
+        equipmentPanel: document.getElementById('equipmentPanel'),
+        btnOpenEquipment: document.getElementById('btnOpenEquipment'),
+        equipWeaponSlot: document.getElementById('equipWeaponSlot'),
+        equipArmorSlot: document.getElementById('equipArmorSlot'),
+        equipAccessorySlot: document.getElementById('equipAccessorySlot'),
+        inventoryList: document.getElementById('inventoryList'),
+        
+        // 装备预览（商店）
+        equipmentPreviewPanel: document.getElementById('equipmentPreviewPanel'),
+        previewItemName: document.getElementById('previewItemName'),
+        previewItemStat: document.getElementById('previewItemStat'),
+        previewItemPrice: document.getElementById('previewItemPrice'),
+        previewCurrentGold: document.getElementById('previewCurrentGold'),
+        btnConfirmBuyEquipment: document.getElementById('btnConfirmBuyEquipment'),
+        btnCancelBuyEquipment: document.getElementById('btnCancelBuyEquipment'),
+        currentPreviewItem: null,
+        currentPreviewSlot: null,
+        
+        // 装备对比弹窗
+        equipmentComparePanel: document.getElementById('equipmentComparePanel'),
+        compareItemName: document.getElementById('compareItemName'),
+        compareItemStat: document.getElementById('compareItemStat'),
+        compareCurrentName: document.getElementById('compareCurrentName'),
+        compareCurrentStat: document.getElementById('compareCurrentStat'),
+        compareDiff: document.getElementById('compareDiff'),
+        btnEquipCompare: document.getElementById('btnEquipCompare'),
+        btnSellCompare: document.getElementById('btnSellCompare'),
+        btnCancelCompare: document.getElementById('btnCancelCompare'),
+        currentCompareItem: null,
     };
 }
 
@@ -948,4 +979,262 @@ function addLog(message, type = 'system') {
     entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
     elements.battleLog.appendChild(entry);
     elements.battleLog.scrollTop = elements.battleLog.scrollHeight;
+}
+
+// ==================== 装备系统 ====================
+
+// 打开商店的装备预览
+async function onPreviewEquipment(slot) {
+    try {
+        const result = await gameAPI.previewEquipment(slot);
+        if (result.success) {
+            showEquipmentPreview(result.preview, result.currentGold, result.canAfford, slot);
+        }
+    } catch (error) {
+        addLog('请求失败: ' + error.message, 'error');
+    }
+}
+
+// 显示装备预览弹窗
+function showEquipmentPreview(item, gold, canAfford, slot) {
+    elements.currentPreviewItem = item;
+    elements.currentPreviewSlot = slot;
+    
+    // 更新显示
+    elements.previewItemName.textContent = `${item.icon} ${item.name}`;
+    elements.previewItemStat.textContent = `${getStatDisplayName(item.statName)} +${item.statValue}`;
+    elements.previewItemPrice.textContent = `💰 ${item.price} 金币`;
+    elements.previewCurrentGold.textContent = gold;
+    
+    // 按钮状态
+    elements.btnConfirmBuyEquipment.disabled = !canAfford;
+    elements.btnConfirmBuyEquipment.textContent = canAfford ? '购买' : '金币不足';
+    
+    // 显示面板
+    elements.equipmentPreviewPanel.classList.remove('hidden');
+}
+
+// 关闭装备预览
+function onCancelPreviewEquipment() {
+    elements.equipmentPreviewPanel.classList.add('hidden');
+    elements.currentPreviewItem = null;
+    elements.currentPreviewSlot = null;
+}
+
+// 确认购买装备
+async function onConfirmBuyEquipment() {
+    if (!elements.currentPreviewItem || !elements.currentPreviewSlot) return;
+    
+    try {
+        const result = await gameAPI.buyEquipment(elements.currentPreviewSlot, elements.currentPreviewItem);
+        if (result.success) {
+            addLog(result.message, 'success');
+            updateShopDisplay();
+            onCancelPreviewEquipment();
+        } else if (result.reason === 'not_enough_gold') {
+            addLog(`金币不足！需要 ${result.required}，当前 ${result.current}`, 'system');
+        } else if (result.reason === 'inventory_full') {
+            addLog('背包已满！请先清理背包', 'system');
+        }
+    } catch (error) {
+        addLog('请求失败: ' + error.message, 'error');
+    }
+}
+
+// 打开装备管理面板
+function onOpenEquipment() {
+    elements.equipmentPanel.classList.remove('hidden');
+    updateEquipmentDisplay();
+}
+
+// 关闭装备管理面板
+function onCloseEquipment() {
+    elements.equipmentPanel.classList.add('hidden');
+}
+
+// 更新装备显示
+async function updateEquipmentDisplay() {
+    try {
+        const result = await gameAPI.getEquipmentState();
+        if (result.success) {
+            // 更新装备位
+            updateEquipmentSlot('weapon', result.equipment.weapon);
+            updateEquipmentSlot('armor', result.equipment.armor);
+            updateEquipmentSlot('accessory', result.equipment.accessory);
+            
+            // 更新背包
+            updateInventoryList(result.inventory);
+            
+            // 更新装备加成显示
+            updateEquipmentBonusDisplay(result.equipmentBonus);
+        }
+    } catch (error) {
+        addLog('请求失败: ' + error.message, 'error');
+    }
+}
+
+// 更新单个装备位
+function updateEquipmentSlot(slot, item) {
+    const slotEl = document.getElementById(`equip${slot.charAt(0).toUpperCase() + slot.slice(1)}Slot`);
+    if (!slotEl) return;
+    
+    if (item) {
+        slotEl.innerHTML = `
+            <div class="equipped-item" onclick="onUnequipItemClick('${slot}')">
+                <span class="item-icon">${item.icon}</span>
+                <span class="item-name">${item.name}</span>
+                <span class="item-stat">${getStatDisplayName(item.statName)} +${item.statValue}</span>
+            </div>
+        `;
+    } else {
+        slotEl.innerHTML = `<div class="empty-slot">空</div>`;
+    }
+}
+
+// 更新背包列表
+function updateInventoryList(inventory) {
+    if (!elements.inventoryList) return;
+    
+    if (inventory.length === 0) {
+        elements.inventoryList.innerHTML = '<div class="empty-inventory">背包为空</div>';
+        return;
+    }
+    
+    elements.inventoryList.innerHTML = inventory.map(item => `
+        <div class="inventory-item" onclick="onInventoryItemClick('${item.id}')">
+            <span class="item-icon">${item.icon}</span>
+            <span class="item-name">${item.name}</span>
+            <span class="item-stat">${getStatDisplayName(item.statName)} +${item.statValue}</span>
+            <span class="item-price">💰${Math.floor(item.price * 0.3)}</span>
+        </div>
+    `).join('');
+}
+
+// 更新装备加成显示
+function updateEquipmentBonusDisplay(bonus) {
+    const bonusEl = document.getElementById('equipmentBonusDisplay');
+    if (!bonusEl) return;
+    
+    const parts = [];
+    if (bonus.strength > 0) parts.push(`力量+${bonus.strength}`);
+    if (bonus.magic > 0) parts.push(`魔法+${bonus.magic}`);
+    if (bonus.stamina > 0) parts.push(`体力+${bonus.stamina}`);
+    if (bonus.defense > 0) parts.push(`防御+${bonus.defense}`);
+    
+    bonusEl.textContent = parts.length > 0 ? `装备加成: ${parts.join(' / ')}` : '装备加成: 无';
+}
+
+// 点击背包装备（显示对比）
+async function onInventoryItemClick(itemId) {
+    try {
+        const result = await gameAPI.getEquipmentState();
+        if (result.success) {
+            const item = result.inventory.find(eq => eq.id === itemId);
+            if (item) {
+                showEquipmentCompare(item, result.equipment[item.type]);
+            }
+        }
+    } catch (error) {
+        addLog('请求失败: ' + error.message, 'error');
+    }
+}
+
+// 显示装备对比弹窗
+function showEquipmentCompare(item, currentEquipped) {
+    elements.currentCompareItem = item;
+    
+    // 更新显示
+    elements.compareItemName.textContent = `${item.icon} ${item.name}`;
+    elements.compareItemStat.textContent = `${getStatDisplayName(item.statName)} +${item.statValue}`;
+    
+    if (currentEquipped) {
+        elements.compareCurrentName.textContent = `${currentEquipped.icon} ${currentEquipped.name}`;
+        elements.compareCurrentStat.textContent = `${getStatDisplayName(currentEquipped.statName)} +${currentEquipped.statValue}`;
+        
+        // 计算差异
+        if (item.statName === currentEquipped.statName) {
+            const diff = item.statValue - currentEquipped.statValue;
+            elements.compareDiff.textContent = diff > 0 ? `差异: +${diff}` : `差异: ${diff}`;
+            elements.compareDiff.className = diff > 0 ? 'compare-positive' : 'compare-negative';
+        } else {
+            elements.compareDiff.textContent = `差异: 属性类型不同`;
+            elements.compareDiff.className = '';
+        }
+    } else {
+        elements.compareCurrentName.textContent = '当前：空';
+        elements.compareCurrentStat.textContent = '';
+        elements.compareDiff.textContent = `差异: +${item.statValue}`;
+        elements.compareDiff.className = 'compare-positive';
+    }
+    
+    // 显示面板
+    elements.equipmentComparePanel.classList.remove('hidden');
+}
+
+// 关闭对比弹窗
+function onCancelCompare() {
+    elements.equipmentComparePanel.classList.add('hidden');
+    elements.currentCompareItem = null;
+}
+
+// 装备选中的装备
+async function onEquipCompare() {
+    if (!elements.currentCompareItem) return;
+    
+    try {
+        const result = await gameAPI.equipItem(elements.currentCompareItem.id);
+        if (result.success) {
+            addLog(result.message, 'success');
+            updateEquipmentDisplay();
+            onCancelCompare();
+        } else {
+            addLog('装备失败: ' + result.reason, 'system');
+        }
+    } catch (error) {
+        addLog('请求失败: ' + error.message, 'error');
+    }
+}
+
+// 出售选中的装备
+async function onSellCompare() {
+    if (!elements.currentCompareItem) return;
+    
+    try {
+        const result = await gameAPI.sellEquipment(elements.currentCompareItem.id);
+        if (result.success) {
+            addLog(result.message, 'success');
+            updateEquipmentDisplay();
+            onCancelCompare();
+        } else {
+            addLog('出售失败: ' + result.reason, 'system');
+        }
+    } catch (error) {
+        addLog('请求失败: ' + error.message, 'error');
+    }
+}
+
+// 卸下装备（点击已装备项）
+async function onUnequipItemClick(slot) {
+    try {
+        const result = await gameAPI.unequipItem(slot);
+        if (result.success) {
+            addLog(result.message, 'success');
+            updateEquipmentDisplay();
+        } else {
+            addLog('卸下失败: ' + result.reason, 'system');
+        }
+    } catch (error) {
+        addLog('请求失败: ' + error.message, 'error');
+    }
+}
+
+// 属性名称中文映射
+function getStatDisplayName(statName) {
+    const names = {
+        strength: '力量',
+        magic: '魔法',
+        stamina: '体力',
+        defense: '防御'
+    };
+    return names[statName] || statName;
 }

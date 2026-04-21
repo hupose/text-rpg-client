@@ -229,6 +229,7 @@
                 <div class="system-actions">
                     <button id="btnSave" class="btn btn-success" onclick="onSaveGame()">💾 保存进度</button>
                     <button id="btnOpenShop" class="btn btn-warning" onclick="onOpenShop()">🏪 商店</button>
+                    <button id="btnOpenEquipment" class="btn btn-info" onclick="onOpenEquipment()">⚔️ 装备管理</button>
                     <button id="btnUsePotion" class="btn btn-primary" onclick="onOpenPotionPanel()">🧪 使用药品</button>
                     <button id="btnExport" class="btn btn-secondary" onclick="onExportData()">📤 导出数据</button>
                     <button id="btnImport" class="btn btn-secondary" onclick="document.getElementById('importFile').click()">📥 导入数据</button>
@@ -311,6 +312,30 @@
                 <input type="number" id="buyLargeCount" class="buy-count-input" value="1" min="1" max="99">
                 <button class="shop-buy-btn" onclick="onBuyPotion('large')">购买</button>
             </div>
+            <div class="shop-divider" style="margin: 15px 0; border-top: 1px solid #444;"></div>
+            <div class="shop-section-title">⚔️ 装备购买（随机属性）</div>
+            <div class="shop-item equipment-shop-item">
+                <div class="shop-item-info">
+                    <div class="shop-item-name">🗡️ 武器</div>
+                    <div class="shop-item-desc">随机力量或魔法属性 · 价格随等级/属性变化</div>
+                </div>
+                <button class="shop-buy-btn" onclick="onPreviewEquipment('weapon')">预览</button>
+            </div>
+            <div class="shop-item equipment-shop-item">
+                <div class="shop-item-info">
+                    <div class="shop-item-name">🛡️ 盔甲</div>
+                    <div class="shop-item-desc">随机防御属性 · 价格随等级/属性变化</div>
+                </div>
+                <button class="shop-buy-btn" onclick="onPreviewEquipment('armor')">预览</button>
+            </div>
+            <div class="shop-item equipment-shop-item">
+                <div class="shop-item-info">
+                    <div class="shop-item-name">💎 饰品</div>
+                    <div class="shop-item-desc">随机体力属性 · 价格随等级/属性变化</div>
+                </div>
+                <button class="shop-buy-btn" onclick="onPreviewEquipment('accessory')">预览</button>
+            </div>
+            <div class="shop-divider" style="margin: 15px 0; border-top: 1px solid #444;"></div>
             <div class="shop-item shop-divider">
                 <div class="shop-item-info">
                     <div class="shop-item-name">🔄 属性重置</div>
@@ -320,6 +345,81 @@
             </div>
             <div class="shop-footer">
                 当前金币：<span class="shop-gold" id="shopGoldDisplay">0</span>
+            </div>
+        </div>
+        
+        <!-- 装备预览弹窗 -->
+        <div id="equipmentPreviewPanel" class="equipment-preview-panel hidden">
+            <div class="preview-header">
+                <h3>🎲 装备预览</h3>
+            </div>
+            <div class="preview-content">
+                <div class="preview-item-name" id="previewItemName">-</div>
+                <div class="preview-item-stat" id="previewItemStat">-</div>
+                <div class="preview-item-price" id="previewItemPrice">-</div>
+                <div class="preview-divider"></div>
+                <div class="preview-current-gold">当前金币：<span id="previewCurrentGold">0</span></div>
+            </div>
+            <div class="preview-actions">
+                <button id="btnConfirmBuyEquipment" class="btn btn-primary" onclick="onConfirmBuyEquipment()">购买</button>
+                <button id="btnCancelBuyEquipment" class="btn btn-secondary" onclick="onCancelPreviewEquipment()">取消</button>
+            </div>
+        </div>
+        
+        <!-- 装备管理面板 -->
+        <div id="equipmentPanel" class="equipment-panel hidden">
+            <div class="equipment-header">
+                <h3>⚔️ 装备管理</h3>
+                <button class="shop-close-btn" onclick="onCloseEquipment()">✕</button>
+            </div>
+            <div class="equipment-section">
+                <h4>当前装备</h4>
+                <div class="equipment-slots">
+                    <div class="equipment-slot">
+                        <span class="slot-label">🗡️ 武器</span>
+                        <div id="equipWeaponSlot" class="slot-content"></div>
+                    </div>
+                    <div class="equipment-slot">
+                        <span class="slot-label">🛡️ 盔甲</span>
+                        <div id="equipArmorSlot" class="slot-content"></div>
+                    </div>
+                    <div class="equipment-slot">
+                        <span class="slot-label">💎 饰品</span>
+                        <div id="equipAccessorySlot" class="slot-content"></div>
+                    </div>
+                </div>
+                <div id="equipmentBonusDisplay" class="equipment-bonus">装备加成: 无</div>
+            </div>
+            <div class="equipment-divider"></div>
+            <div class="equipment-section">
+                <h4>背包装备 (<span id="inventoryCount">0</span>/20)</h4>
+                <div id="inventoryList" class="inventory-list"></div>
+            </div>
+        </div>
+        
+        <!-- 装备对比弹窗 -->
+        <div id="equipmentComparePanel" class="equipment-compare-panel hidden">
+            <div class="compare-header">
+                <h3>装备对比</h3>
+            </div>
+            <div class="compare-content">
+                <div class="compare-new">
+                    <div class="compare-label">背包装备</div>
+                    <div class="compare-item-name" id="compareItemName">-</div>
+                    <div class="compare-item-stat" id="compareItemStat">-</div>
+                </div>
+                <div class="compare-divider"></div>
+                <div class="compare-current">
+                    <div class="compare-label">当前装备</div>
+                    <div class="compare-current-name" id="compareCurrentName">-</div>
+                    <div class="compare-current-stat" id="compareCurrentStat">-</div>
+                </div>
+                <div class="compare-diff" id="compareDiff">-</div>
+            </div>
+            <div class="compare-actions">
+                <button id="btnEquipCompare" class="btn btn-primary" onclick="onEquipCompare()">装备</button>
+                <button id="btnSellCompare" class="btn btn-warning" onclick="onSellCompare()">出售</button>
+                <button id="btnCancelCompare" class="btn btn-secondary" onclick="onCancelCompare()">取消</button>
             </div>
         </div>
         

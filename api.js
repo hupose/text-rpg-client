@@ -207,6 +207,38 @@ class GameAPI {
         return this.emit('revive');
     }
     
+    // ==================== 装备相关 API ====================
+    
+    // 预览装备（生成随机属性）
+    async previewEquipment(slot) {
+        return this.emit('preview-equipment', { slot });
+    }
+    
+    // 购买装备（确认购买）
+    async buyEquipment(slot, previewItem) {
+        return this.emit('buy-equipment', { slot, previewItem });
+    }
+    
+    // 装备背包装备
+    async equipItem(itemId) {
+        return this.emit('equip-item', { itemId });
+    }
+    
+    // 卸下装备
+    async unequipItem(slot) {
+        return this.emit('unequip-item', { slot });
+    }
+    
+    // 出售装备
+    async sellEquipment(itemId) {
+        return this.emit('sell-equipment', { itemId });
+    }
+    
+    // 获取装备状态
+    async getEquipmentState() {
+        return this.emit('get-equipment-state');
+    }
+    
     // 离线战斗
     async startOfflineFarm(interval = 10) {
         return this.emit('start-offline-farm', { interval });

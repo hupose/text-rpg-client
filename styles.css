@@ -867,7 +867,7 @@ input[type="number"]:focus {
     }
     
     /* 商店在手机上更紧凑 */
-    .shop-panel, .potion-panel {
+    .shop-panel, .potion-panel, .equipment-panel, .equipment-preview-panel, .equipment-compare-panel {
         width: 95%;
         padding: 16px;
     }
@@ -891,4 +891,322 @@ input[type="number"]:focus {
     .shop-buy-btn {
         width: 100%;
     }
+}
+
+/* ==================== 装备相关样式 ==================== */
+
+/* 装备预览弹窗 */
+.equipment-preview-panel {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 20px;
+    width: 90%;
+    max-width: 400px;
+    z-index: 1001;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.preview-header {
+    text-align: center;
+    margin-bottom: 16px;
+}
+
+.preview-header h3 {
+    color: var(--warning-color);
+    font-size: 20px;
+}
+
+.preview-content {
+    padding: 16px;
+    background: var(--bg-color);
+    border-radius: 8px;
+    margin-bottom: 16px;
+}
+
+.preview-item-name {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.preview-item-stat {
+    font-size: 16px;
+    color: var(--success-color);
+    margin-bottom: 8px;
+}
+
+.preview-item-price {
+    font-size: 14px;
+    color: var(--warning-color);
+}
+
+.preview-divider {
+    height: 1px;
+    background: var(--border-color);
+    margin: 12px 0;
+}
+
+.preview-current-gold {
+    font-size: 14px;
+    color: var(--text-muted);
+}
+
+.preview-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+/* 装备管理面板 */
+.equipment-panel {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 20px;
+    width: 90%;
+    max-width: 450px;
+    max-height: 80vh;
+    overflow-y: auto;
+    z-index: 1001;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.equipment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.equipment-header h3 {
+    margin: 0;
+    font-size: 20px;
+}
+
+.equipment-section {
+    margin-bottom: 16px;
+}
+
+.equipment-section h4 {
+    font-size: 16px;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+}
+
+.equipment-slots {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.equipment-slot {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    background: var(--bg-color);
+    border-radius: 8px;
+}
+
+.slot-label {
+    font-weight: 600;
+    width: 60px;
+}
+
+.slot-content {
+    flex: 1;
+    margin-left: 10px;
+}
+
+.empty-slot {
+    color: var(--text-muted);
+    font-size: 14px;
+}
+
+.equipped-item {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    padding: 8px;
+    background: var(--card-bg);
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+}
+
+.equipped-item:hover {
+    border-color: var(--primary-color);
+}
+
+.item-icon {
+    font-size: 18px;
+    margin-right: 8px;
+}
+
+.item-name {
+    font-weight: 600;
+    margin-right: 10px;
+}
+
+.item-stat {
+    color: var(--success-color);
+    font-size: 14px;
+}
+
+.item-price {
+    color: var(--warning-color);
+    font-size: 12px;
+    margin-left: auto;
+}
+
+.equipment-bonus {
+    padding: 10px;
+    background: linear-gradient(135deg, var(--success-color), #218838);
+    color: white;
+    border-radius: 8px;
+    font-size: 14px;
+    text-align: center;
+}
+
+.equipment-divider {
+    height: 2px;
+    background: var(--border-color);
+    margin: 16px 0;
+}
+
+.inventory-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.empty-inventory {
+    color: var(--text-muted);
+    font-size: 14px;
+    text-align: center;
+    padding: 20px;
+}
+
+.inventory-item {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    background: var(--bg-color);
+    border-radius: 8px;
+    cursor: pointer;
+    border: 1px solid var(--border-color);
+}
+
+.inventory-item:hover {
+    border-color: var(--primary-color);
+    background: var(--card-bg);
+}
+
+/* 装备对比弹窗 */
+.equipment-compare-panel {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 20px;
+    width: 90%;
+    max-width: 400px;
+    z-index: 1002;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.compare-header {
+    text-align: center;
+    margin-bottom: 16px;
+}
+
+.compare-header h3 {
+    font-size: 18px;
+    color: var(--primary-color);
+}
+
+.compare-content {
+    padding: 16px;
+    background: var(--bg-color);
+    border-radius: 8px;
+    margin-bottom: 16px;
+}
+
+.compare-new, .compare-current {
+    padding: 10px;
+}
+
+.compare-label {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+}
+
+.compare-item-name, .compare-current-name {
+    font-weight: 600;
+    font-size: 16px;
+}
+
+.compare-item-stat, .compare-current-stat {
+    color: var(--success-color);
+    font-size: 14px;
+}
+
+.compare-divider {
+    height: 1px;
+    background: var(--border-color);
+    margin: 10px 0;
+}
+
+.compare-diff {
+    text-align: center;
+    padding: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 6px;
+    background: var(--card-bg);
+}
+
+.compare-positive {
+    color: var(--success-color);
+}
+
+.compare-negative {
+    color: var(--danger-color);
+}
+
+.compare-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+/* 商店装备项样式 */
+.shop-section-title {
+    font-size: 16px;
+    color: var(--warning-color);
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
+.equipment-shop-item {
+    background: linear-gradient(135deg, rgba(255, 193, 7, 0.1), rgba(255, 193, 7, 0.05));
+}
+
+/* btn-info 样式 */
+.btn-info {
+    background: #17a2b8;
+    color: white;
+}
+
+.btn-info:hover {
+    background: #138496;
 }
