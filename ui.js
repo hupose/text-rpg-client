@@ -1011,7 +1011,7 @@ function showEquipmentResult(item, goldRemaining) {
     elements.previewItemPrice.textContent = `💰 已花费 ${item.price} 金币`;
     elements.previewCurrentGold.textContent = goldRemaining;
     
-    // 修改按钮：装备 / 卖掉 / 关闭
+    // 修改按钮：装备 / 卖掉 / 留背包
     const btnConfirm = elements.btnConfirmBuyEquipment;
     const btnCancel = elements.btnCancelBuyEquipment;
     
@@ -1022,17 +1022,19 @@ function showEquipmentResult(item, goldRemaining) {
     btnCancel.textContent = '卖掉（退回30%）';
     btnCancel.onclick = () => onSellNewEquipment();
     
-    // 添加第三个按钮（留背包）
-    const btnKeep = document.createElement('button');
-    btnKeep.className = 'btn btn-secondary';
-    btnKeep.textContent = '留背包';
-    btnKeep.onclick = () => onClosePreviewEquipment();
-    
-    // 替换按钮区域（临时）
+    // 添加第三个按钮（留背包）- 使用固定ID避免重复
     const actionsDiv = elements.equipmentPreviewPanel.querySelector('.preview-actions');
-    if (actionsDiv && !actionsDiv.querySelector('.btn-keep')) {
+    let btnKeep = document.getElementById('btn-keep-equipment');
+    
+    // 如果已存在就复用，不存在才创建
+    if (!btnKeep) {
+        btnKeep = document.createElement('button');
+        btnKeep.id = 'btn-keep-equipment';
+        btnKeep.className = 'btn btn-secondary';
         actionsDiv.appendChild(btnKeep);
     }
+    btnKeep.textContent = '留背包';
+    btnKeep.onclick = () => onClosePreviewEquipment();
     
     // 显示面板
     elements.equipmentPreviewPanel.classList.remove('hidden');
@@ -1088,10 +1090,7 @@ function onClosePreviewEquipment() {
     btnCancel.textContent = '取消';
     btnCancel.onclick = null;
     
-    // 移除临时添加的按钮
-    const actionsDiv = elements.equipmentPreviewPanel.querySelector('.preview-actions');
-    const btnKeep = actionsDiv?.querySelector('.btn-keep');
-    if (btnKeep) btnKeep.remove();
+    // 不移除"留背包"按钮，下次购买时会复用
 }
 
 // 打开装备管理面板
