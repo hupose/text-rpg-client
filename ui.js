@@ -983,54 +983,14 @@ function addLog(message, type = 'system') {
 
 // ==================== 装备系统 ====================
 
-// 打开商店的装备预览
-async function onPreviewEquipment(slot) {
+// 直接购买装备（花钱后才能看属性）
+async function onBuyEquipment(slot) {
     try {
-        const result = await gameAPI.previewEquipment(slot);
+        const result = await gameAPI.buyEquipment(slot);
         if (result.success) {
-            showEquipmentPreview(result.preview, result.currentGold, result.canAfford, slot);
-        }
-    } catch (error) {
-        addLog('请求失败: ' + error.message, 'error');
-    }
-}
-
-// 显示装备预览弹窗
-function showEquipmentPreview(item, gold, canAfford, slot) {
-    elements.currentPreviewItem = item;
-    elements.currentPreviewSlot = slot;
-    
-    // 更新显示
-    elements.previewItemName.textContent = `${item.icon} ${item.name}`;
-    elements.previewItemStat.textContent = `${getStatDisplayName(item.statName)} +${item.statValue}`;
-    elements.previewItemPrice.textContent = `💰 ${item.price} 金币`;
-    elements.previewCurrentGold.textContent = gold;
-    
-    // 按钮状态
-    elements.btnConfirmBuyEquipment.disabled = !canAfford;
-    elements.btnConfirmBuyEquipment.textContent = canAfford ? '购买' : '金币不足';
-    
-    // 显示面板
-    elements.equipmentPreviewPanel.classList.remove('hidden');
-}
-
-// 关闭装备预览
-function onCancelPreviewEquipment() {
-    elements.equipmentPreviewPanel.classList.add('hidden');
-    elements.currentPreviewItem = null;
-    elements.currentPreviewSlot = null;
-}
-
-// 确认购买装备
-async function onConfirmBuyEquipment() {
-    if (!elements.currentPreviewItem || !elements.currentPreviewSlot) return;
-    
-    try {
-        const result = await gameAPI.buyEquipment(elements.currentPreviewSlot, elements.currentPreviewItem);
-        if (result.success) {
-            addLog(result.message, 'success');
+            // 显示购买的装备详情弹窗
+            showEquipmentResult(result.item, result.goldRemaining);
             updateShopDisplay();
-            onCancelPreviewEquipment();
         } else if (result.reason === 'not_enough_gold') {
             addLog(`金币不足！需要 ${result.required}，当前 ${result.current}`, 'system');
         } else if (result.reason === 'inventory_full') {
@@ -1039,6 +999,99 @@ async function onConfirmBuyEquipment() {
     } catch (error) {
         addLog('请求失败: ' + error.message, 'error');
     }
+}
+
+// 显示购买结果弹窗（花钱后才能看属性）
+function showEquipmentResult(item, goldRemaining) {
+    elements.currentPreviewItem = item;
+    
+    // 更新显示：显示刚买的装备详情
+    elements.previewItemName.textContent = `${item.icon} ${item.name}`;
+    elements.previewItemStat.textContent = `${getStatDisplayName(item.statName)} +${item.statValue}`;
+    elements.previewItemPrice.textContent = `💰 已花费 ${item.price} 金币`;
+    elements.previewCurrentGold.textContent = goldRemaining;
+    
+    // 修改按钮：装备 / 卖掉 / 关闭
+    const btnConfirm = elements.btnConfirmBuyEquipment;
+    const btnCancel = elements.btnCancelBuyEquipment;
+    
+    btnConfirm.textContent = '装备';
+    btnConfirm.disabled = false;
+    btnConfirm.onclick = () => onEquipNewEquipment();
+    
+    btnCancel.textContent = '卖掉（退回30%）';
+    btnCancel.onclick = () => onSellNewEquipment();
+    
+    // 添加第三个按钮（留背包）
+    const btnKeep = document.createElement('button');
+    btnKeep.className = 'btn btn-secondary';
+    btnKeep.textContent = '留背包';
+    btnKeep.onclick = () => onClosePreviewEquipment();
+    
+    // 替换按钮区域（临时）
+    const actionsDiv = elements.equipmentPreviewPanel.querySelector('.preview-actions');
+    if (actionsDiv && !actionsDiv.querySelector('.btn-keep')) {
+        actionsDiv.appendChild(btnKeep);
+    }
+    
+    // 显示面板
+    elements.equipmentPreviewPanel.classList.remove('hidden');
+    
+    // 添加日志
+    addLog(`✅ 购买了 ${item.icon} ${item.name}，属性揭晓：${getStatDisplayName(item.statName)} +${item.statValue}`, 'success');
+}
+
+// 装备刚买的装备
+async function onEquipNewEquipment() {
+    if (!elements.currentPreviewItem) return;
+    
+    try {
+        const result = await gameAPI.equipItem(elements.currentPreviewItem.id);
+        if (result.success) {
+            addLog(result.message, 'success');
+            onClosePreviewEquipment();
+            // 打开装备管理面板查看
+            setTimeout(() => onOpenEquipment(), 500);
+        }
+    } catch (error) {
+        addLog('请求失败: ' + error.message, 'error');
+    }
+}
+
+// 卖掉刚买的装备
+async function onSellNewEquipment() {
+    if (!elements.currentPreviewItem) return;
+    
+    const sellPrice = Math.floor(elements.currentPreviewItem.price * 0.3);
+    
+    try {
+        const result = await gameAPI.sellEquipment(elements.currentPreviewItem.id);
+        if (result.success) {
+            addLog(result.message, 'success');
+            onClosePreviewEquipment();
+        }
+    } catch (error) {
+        addLog('请求失败: ' + error.message, 'error');
+    }
+}
+
+// 关闭装备结果弹窗
+function onClosePreviewEquipment() {
+    elements.equipmentPreviewPanel.classList.add('hidden');
+    elements.currentPreviewItem = null;
+    
+    // 恢复按钮状态
+    const btnConfirm = elements.btnConfirmBuyEquipment;
+    const btnCancel = elements.btnCancelBuyEquipment;
+    btnConfirm.textContent = '购买';
+    btnConfirm.onclick = null;
+    btnCancel.textContent = '取消';
+    btnCancel.onclick = null;
+    
+    // 移除临时添加的按钮
+    const actionsDiv = elements.equipmentPreviewPanel.querySelector('.preview-actions');
+    const btnKeep = actionsDiv?.querySelector('.btn-keep');
+    if (btnKeep) btnKeep.remove();
 }
 
 // 打开装备管理面板

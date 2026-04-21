@@ -209,14 +209,9 @@ class GameAPI {
     
     // ==================== 装备相关 API ====================
     
-    // 预览装备（生成随机属性）
-    async previewEquipment(slot) {
-        return this.emit('preview-equipment', { slot });
-    }
-    
-    // 购买装备（确认购买）
-    async buyEquipment(slot, previewItem) {
-        return this.emit('buy-equipment', { slot, previewItem });
+    // 直接购买装备（花钱后才能看属性）
+    async buyEquipment(slot) {
+        return this.emit('buy-equipment', { slot });
     }
     
     // 装备背包装备
